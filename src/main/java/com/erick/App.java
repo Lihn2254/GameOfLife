@@ -7,6 +7,8 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -32,10 +34,24 @@ public class App extends Application {
         // Blinker
         // game = new Game(10, new Cell[]{new Cell(5, 5), new Cell(5, 6), new Cell(5,
         // 7)});
+        game = new Game(80);
+
+        try {
+            game.setInitialState(new Cell[]{new Cell(50, 100)});
+        } catch (Exception ex) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Reset Error");
+            alert.setHeaderText("Failed to reset the game");
+
+            alert.setContentText(ex.getMessage());
+
+            alert.showAndWait();
+        }
 
         // Beacon
-        game = new Game(100, new Cell[] { new Cell(50, 50), new Cell(50, 49), new Cell(49, 50), new Cell(49, 49),
-                new Cell(51, 51), new Cell(51, 52), new Cell(52, 51), new Cell(52, 52) });
+        // game = new Game(100, new Cell[] { new Cell(50, 50), new Cell(50, 49), new
+        // Cell(49, 50), new Cell(49, 49),
+        // new Cell(51, 51), new Cell(51, 52), new Cell(52, 51), new Cell(52, 52) });
 
         Label generationLabel = new Label("Generation: 0");
 
@@ -49,7 +65,24 @@ public class App extends Application {
         ToolBar menuBar = new ToolBar(generationLabel, speedLabel, speedInput, startButton, stopButton,
                 resetButton);
 
-        canvas = new Canvas(600, 600);
+        canvas = new Canvas(700, 700);
+
+        canvas.setOnMouseClicked(event -> {
+            boolean[][] currentGrid = game.getGrid();
+            int rows = currentGrid.length;
+            int cols = currentGrid[0].length;
+
+            // Recalculate cell dimensions
+            double cellWidth = canvas.getWidth() / cols;
+            double cellHeight = canvas.getHeight() / rows;
+
+            int clickedCol = (int) (event.getX() / cellWidth);
+            int clickedRow = (int) (event.getY() / cellHeight);
+
+            game.toggleCell(clickedRow, clickedCol);
+
+            drawGrid(game.getGrid());
+        });
 
         startButton.setOnAction(e -> {
             double animationSpeed;
@@ -97,9 +130,19 @@ public class App extends Application {
                 isRunning = false;
             }
 
-            game.reset();
-            drawGrid(game.getGrid());
-            generationLabel.setText("Generation: " + game.getGeneration());
+            try {
+                game.reset();
+                drawGrid(game.getGrid());
+                generationLabel.setText("Generation: " + game.getGeneration());
+            } catch (Exception ex) {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Reset Error");
+                alert.setHeaderText("Failed to reset the game");
+
+                alert.setContentText(ex.getMessage());
+
+                alert.showAndWait();
+            }
         });
 
         stopButton.setOnAction(e -> {

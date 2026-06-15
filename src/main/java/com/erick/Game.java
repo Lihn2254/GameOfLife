@@ -1,7 +1,5 @@
 package com.erick;
 
-
-
 public class Game {
     /*
      * Game Of Life Rules
@@ -21,10 +19,45 @@ public class Game {
     private Cell[] initialState;
     private int generation = 0;
 
-    public Game(int gridSize, Cell[] initialState) {
+    public Game(int gridSize, Cell[] initialState) throws Exception {
         this.grid = new boolean[gridSize][gridSize];
         this.initialState = initialState;
         initializeGrid();
+    }
+
+    public Game(int gridSize) {
+        this.grid = new boolean[gridSize][gridSize];
+    }
+
+    public void setInitialState(Cell[] initialState)  throws Exception {
+        this.initialState = initialState;
+        initializeGrid();
+    }
+
+    public void loadPreset(String presetName) throws Exception{
+        boolean[][] preset = PresetRegistry.getPreset(presetName);
+        
+        Cell origin = getGridCenter();
+
+        Cell[] cellPattern = new Cell[PresetRegistry.getPresetSize(presetName)];
+
+        int cellCount = 0;
+        for (int x = 0; x < preset.length; x++) {
+            for(int y = 0; y < preset[x].length; y++) {
+                if (preset[x][y]) {
+                    cellPattern[cellCount] = new Cell(origin.x + x, origin.y + y);
+                }
+            }
+        }
+
+        setInitialState(cellPattern);
+    }
+
+    private Cell getGridCenter() {
+        int x = (int) Math.ceil(grid.length / 2) - 1;
+        int y = (int) Math.ceil(grid[x].length / 2) - 1;
+
+        return new Cell(x, y);
     }
 
     public boolean[][] getGrid() {
@@ -35,7 +68,7 @@ public class Game {
         return generation;
     }
 
-    public void reset() {
+    public void reset() throws Exception{
         for (int y = 0; y < grid.length - 1; y++) {
             for (int x = 0; x < grid[y].length - 1; x++) {
                 grid[x][y] = false;
@@ -45,12 +78,16 @@ public class Game {
         initializeGrid();
     }
 
-    private void initializeGrid() {
-        for (Cell cell : initialState) {
-            grid[cell.x][cell.y] = true;
+    private void initializeGrid() throws Exception{
+        try {
+            for (Cell cell : initialState) {
+                grid[cell.x][cell.y] = true;
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new CellOutOfBoundsException();
+        } finally {
+            generation = 0;
         }
-
-        generation = 0;
     }
 
     // private void printCurrentState() {
@@ -118,5 +155,12 @@ public class Game {
         }
 
         return aliveNeigh;
+    }
+
+    public void toggleCell(int row, int col) {
+        // Basic bounds checking to prevent out-of-bounds errors
+        if (row >= 0 && row < grid.length && col >= 0 && col < grid[0].length) {
+            grid[row][col] = !grid[row][col];
+        }
     }
 }
