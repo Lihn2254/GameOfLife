@@ -22,23 +22,24 @@ public class Game {
     public Game(int gridSize, Cell[] initialState) throws Exception {
         this.grid = new boolean[gridSize][gridSize];
         this.initialState = initialState;
-        initializeGrid();
+        loadInitialState();
     }
 
     public Game(int gridSize) {
         this.grid = new boolean[gridSize][gridSize];
+        this.initialState = new Cell[]{};
     }
 
     public void setInitialState(Cell[] initialState)  throws Exception {
         this.initialState = initialState;
-        initializeGrid();
+        loadInitialState();
     }
 
     public void loadPreset(String presetName) throws Exception{
-        boolean[][] preset = PresetRegistry.getPreset(presetName);
-        
-        Cell origin = getGridCenter();
+        presetName = presetName.toLowerCase();
 
+        boolean[][] preset = PresetRegistry.getPreset(presetName);
+        Cell origin = getGridCenter();
         Cell[] cellPattern = new Cell[PresetRegistry.getPresetSize(presetName)];
 
         int cellCount = 0;
@@ -46,10 +47,12 @@ public class Game {
             for(int y = 0; y < preset[x].length; y++) {
                 if (preset[x][y]) {
                     cellPattern[cellCount] = new Cell(origin.x + x, origin.y + y);
+                    cellCount++;
                 }
             }
         }
 
+        cleanGrid();
         setInitialState(cellPattern);
     }
 
@@ -69,16 +72,25 @@ public class Game {
     }
 
     public void reset() throws Exception{
+        cleanGrid();
+        loadInitialState();
+    }
+
+    public void setBlankGrid() throws Exception {
+        cleanGrid();
+        setInitialState(new Cell[]{});
+        loadInitialState();
+    }
+
+    private void cleanGrid() {
         for (int y = 0; y < grid.length - 1; y++) {
             for (int x = 0; x < grid[y].length - 1; x++) {
                 grid[x][y] = false;
             }
         }
-
-        initializeGrid();
     }
 
-    private void initializeGrid() throws Exception{
+    private void loadInitialState() throws Exception{
         try {
             for (Cell cell : initialState) {
                 grid[cell.x][cell.y] = true;

@@ -1,69 +1,76 @@
 package com.erick;
 
-import com.erick.Game.Cell;
-
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class App extends Application {
-
-    private Canvas canvas;
     private Game game;
     private Thread gameThread;
     private volatile boolean isRunning = false;
+    private Scene scene;
+    private Canvas canvas;
+    private Label generationLabel, speedLabel, presetLabel;
+    private TextField speedInput;
+    private Button startButton, resetButton, stopButton, cleanButton;
+    private ComboBox<String> presetSelector;
+    private ToolBar menuBar;
+    private BorderPane root;
+    private Alert alert;
+    private HBox speedBox, actionButtons, presetBox;
 
     @Override
-    public void start(Stage primaryStage) {
-        // Wikipedia example
-        // game = new Game(100, new Cell[] { new Cell(50, 50), new Cell(50, 51), new
-        // Cell(50, 52), new Cell(49, 52),
-        // new Cell(51, 50), new Cell(51, 49), new Cell(52, 49) });
-
-        // Blinker
-        // game = new Game(10, new Cell[]{new Cell(5, 5), new Cell(5, 6), new Cell(5,
-        // 7)});
+    public void start(Stage stage) {
+        Image icon = new Image(getClass().getResourceAsStream("/icon.png"));
+        stage.getIcons().add(icon);
         game = new Game(80);
 
-        try {
-            game.setInitialState(new Cell[]{new Cell(50, 100)});
-        } catch (Exception ex) {
-            Alert alert = new Alert(AlertType.ERROR);
-            alert.setTitle("Reset Error");
-            alert.setHeaderText("Failed to reset the game");
+        generationLabel = new Label("Generation: 0");
 
-            alert.setContentText(ex.getMessage());
+        int itemsSpacing = 5;
+        Pos position = Pos.CENTER_LEFT;
 
-            alert.showAndWait();
-        }
-
-        // Beacon
-        // game = new Game(100, new Cell[] { new Cell(50, 50), new Cell(50, 49), new
-        // Cell(49, 50), new Cell(49, 49),
-        // new Cell(51, 51), new Cell(51, 52), new Cell(52, 51), new Cell(52, 52) });
-
-        Label generationLabel = new Label("Generation: 0");
-
-        Label speedLabel = new Label("Animation speed:");
-        TextField speedInput = new TextField("1");
+        speedLabel = new Label("Animation speed:");
+        speedInput = new TextField("1");
         speedInput.setPrefWidth(50);
+        speedBox = new HBox(speedLabel, speedInput);
+        speedBox.setAlignment(position);
+        speedBox.setSpacing(itemsSpacing);
 
-        Button startButton = new Button("Start");
-        Button resetButton = new Button("Reset");
-        Button stopButton = new Button("Stop");
-        ToolBar menuBar = new ToolBar(generationLabel, speedLabel, speedInput, startButton, stopButton,
-                resetButton);
+        startButton = new Button("Start");
+        resetButton = new Button("Reset");
+        stopButton = new Button("Stop");
+        cleanButton = new Button("Clean grid");
+        actionButtons = new HBox(startButton, resetButton, stopButton, cleanButton);
+        actionButtons.setAlignment(position);
+        actionButtons.setSpacing(itemsSpacing);
+        
+        presetLabel = new Label("Load preset:");
+        presetSelector = new ComboBox<String>();
+        presetSelector.getItems().addAll(PresetRegistry.getPresetNames());
+        presetBox = new HBox(presetLabel, presetSelector);
+        presetBox.setAlignment(position);
+        
+        menuBar = new ToolBar(generationLabel, speedBox, actionButtons, presetLabel, presetSelector);
+        menuBar.setStyle("-fx-spacing: 15px;");
+
+        alert = new Alert(AlertType.ERROR);
+        alert.setTitle("Preset Error");
 
         canvas = new Canvas(700, 700);
 
@@ -72,7 +79,6 @@ public class App extends Application {
             int rows = currentGrid.length;
             int cols = currentGrid[0].length;
 
-            // Recalculate cell dimensions
             double cellWidth = canvas.getWidth() / cols;
             double cellHeight = canvas.getHeight() / rows;
 
@@ -95,6 +101,7 @@ public class App extends Application {
 
             startButton.setDisable(true);
             stopButton.setDisable(false);
+            cleanButton.setDisable(true);
 
             isRunning = true;
 
@@ -117,6 +124,7 @@ public class App extends Application {
                 Platform.runLater(() -> {
                     startButton.setDisable(false);
                     stopButton.setDisable(true);
+                    cleanButton.setDisable(false);
                     isRunning = false;
                 });
             });
@@ -135,12 +143,8 @@ public class App extends Application {
                 drawGrid(game.getGrid());
                 generationLabel.setText("Generation: " + game.getGeneration());
             } catch (Exception ex) {
-                Alert alert = new Alert(AlertType.ERROR);
-                alert.setTitle("Reset Error");
                 alert.setHeaderText("Failed to reset the game");
-
                 alert.setContentText(ex.getMessage());
-
                 alert.showAndWait();
             }
         });
@@ -149,14 +153,43 @@ public class App extends Application {
             isRunning = false;
         });
 
-        BorderPane root = new BorderPane();
+        cleanButton.setOnAction(e -> {
+            try {
+                game.setBlankGrid();
+                drawGrid(game.getGrid());
+                presetSelector.setValue(null);
+                generationLabel.setText("Generation: " + game.getGeneration());
+            } catch (Exception ex) {
+                alert.setHeaderText("Failed clean the grid");
+                alert.setContentText(ex.getMessage());
+                alert.showAndWait();
+            }
+        });
+        
+        presetSelector.setOnAction(e -> {
+            if (presetSelector.getValue() == null) {
+                return; 
+            }
+
+            try {
+                game.loadPreset(presetSelector.getValue());
+                game.reset();
+                drawGrid(game.getGrid());
+            } catch (Exception ex) {
+                alert.setHeaderText("Preset not found");
+                alert.setContentText(ex.getMessage());
+                alert.showAndWait();
+            }
+        });
+
+        root = new BorderPane();
         root.setTop(menuBar);
         root.setCenter(canvas);
 
-        Scene scene = new Scene(root);
-        primaryStage.setTitle("Game Of Life");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        scene = new Scene(root);
+        stage.setTitle("Game Of Life");
+        stage.setScene(scene);
+        stage.show();
 
         drawGrid(game.getGrid());
     }

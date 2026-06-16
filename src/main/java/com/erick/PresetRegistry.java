@@ -8,21 +8,107 @@ public class PresetRegistry {
     private static final Map<String, boolean[][]> PRESETS = new HashMap<>();
 
     static {
-        PRESETS.put("Glider", new boolean[][] {
-                { false, true, false },
-                { false, false, true },
-                { true, true, true }
+        // --- EXISTING ---
+        PRESETS.put("glider", new boolean[][] {
+                { false, true,  false },
+                { false, false, true  },
+                { true,  true,  true  }
         });
 
-        PRESETS.put("Blinker", new boolean[][] {
+        PRESETS.put("blinker", new boolean[][] {
                 { false, false, false },
-                { true, true, true },
+                { true,  true,  true  },
                 { false, false, false }
         });
 
-        PRESETS.put("Empty", new boolean[][] {
-                { false, false },
-                { false, false }
+        // --- OSCILLATORS ---
+        
+        // Toad (Period 2)
+        PRESETS.put("toad", new boolean[][] {
+                { false, false, false, false },
+                { false, true,  true,  true  },
+                { true,  true,  true,  false },
+                { false, false, false, false }
+        });
+
+        // Beacon (Period 2)
+        PRESETS.put("beacon", new boolean[][] {
+                { true,  true,  false, false },
+                { true,  true,  false, false },
+                { false, false, true,  true  },
+                { false, false, true,  true  }
+        });
+
+        // Pulsar (Period 3) - A larger, more complex oscillator
+        PRESETS.put("pulsar", new boolean[][] {
+                { false, false, true,  true,  true,  false, false, false, true,  true,  true,  false, false },
+                { false, false, false, false, false, false, false, false, false, false, false, false, false },
+                { true,  false, false, false, false, true,  false, true,  false, false, false, false, true  },
+                { true,  false, false, false, false, true,  false, true,  false, false, false, false, true  },
+                { true,  false, false, false, false, true,  false, true,  false, false, false, false, true  },
+                { false, false, true,  true,  true,  false, false, false, true,  true,  true,  false, false },
+                { false, false, false, false, false, false, false, false, false, false, false, false, false },
+                { false, false, true,  true,  true,  false, false, false, true,  true,  true,  false, false },
+                { true,  false, false, false, false, true,  false, true,  false, false, false, false, true  },
+                { true,  false, false, false, false, true,  false, true,  false, false, false, false, true  },
+                { true,  false, false, false, false, true,  false, true,  false, false, false, false, true  },
+                { false, false, false, false, false, false, false, false, false, false, false, false, false },
+                { false, false, true,  true,  true,  false, false, false, true,  true,  true,  false, false }
+        });
+
+        // --- SPACESHIPS ---
+
+        // Lightweight Spaceship (LWSS)
+        PRESETS.put("lwss", new boolean[][] {
+                { false, true,  false, false, true  },
+                { true,  false, false, false, false },
+                { true,  false, false, false, true  },
+                { true,  true,  true,  true,  false }
+        });
+
+        // Middleweight Spaceship (MWSS)
+        PRESETS.put("mwss", new boolean[][] {
+                { false, false, true,  false, false, false },
+                { true,  false, false, false, true,  false },
+                { false, false, false, false, false, true  },
+                { true,  false, false, false, false, true  },
+                { false, true,  true,  true,  true,  true  }
+        });
+
+        // --- STILL LIFES (Static patterns) ---
+
+        // Block
+        PRESETS.put("block", new boolean[][] {
+                { true, true },
+                { true, true }
+        });
+
+        // Beehive
+        PRESETS.put("beehive", new boolean[][] {
+                { false, true,  true,  false },
+                { true,  false, false, true  },
+                { false, true,  true,  false }
+        });
+        
+        // Loaf
+        PRESETS.put("loaf", new boolean[][] {
+                { false, true,  true,  false },
+                { true,  false, false, true  },
+                { false, true,  false, true  },
+                { false, false, true,  false }
+        });
+
+        // Glider gun
+        PRESETS.put("glider gun", new boolean[][] {
+            { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true,  false, false, false, false, false, false, false, false, false, false, false },
+            { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true,  false, true,  false, false, false, false, false, false, false, false, false, false, false },
+            { false, false, false, false, false, false, false, false, false, false, false, false, true,  true,  false, false, false, false, false, false, true,  true,  false, false, false, false, false, false, false, false, false, false, false, false, true,  true  },
+            { false, false, false, false, false, false, false, false, false, false, false, true,  false, false, false, true,  false, false, false, false, true,  true,  false, false, false, false, false, false, false, false, false, false, false, false, true,  true  },
+            { true,  true,  false, false, false, false, false, false, false, false, true,  false, false, false, false, false, true,  false, false, false, true,  true,  false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+            { true,  true,  false, false, false, false, false, false, false, false, true,  false, false, false, true,  false, true,  true,  false, false, false, false, true,  false, true,  false, false, false, false, false, false, false, false, false, false, false },
+            { false, false, false, false, false, false, false, false, false, false, true,  false, false, false, false, false, true,  false, false, false, false, false, false, false, true,  false, false, false, false, false, false, false, false, false, false, false },
+            { false, false, false, false, false, false, false, false, false, false, false, true,  false, false, false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false },
+            { false, false, false, false, false, false, false, false, false, false, false, false, true,  true,  false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false }
         });
     }
 
@@ -49,7 +135,7 @@ public class PresetRegistry {
         }
 
         for (int i = 0; i < original.length; i++) {
-            for (int j = 0; j < original.length; j++) {
+            for (int j = 0; j < original[i].length; j++) {
                 if (original[i][j]) {
                     size++;
                 }
