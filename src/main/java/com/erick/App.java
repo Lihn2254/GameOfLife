@@ -36,7 +36,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) {
-        Image icon = new Image(getClass().getResourceAsStream("/icon.png"));
+        Image icon = new Image(getClass().getResourceAsStream("/app.ico"));
         stage.getIcons().add(icon);
         game = new Game(80);
 
